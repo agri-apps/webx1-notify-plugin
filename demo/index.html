@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBx1 Notify Plugin Demo</title>   
+    <style>
+        #message {
+            margin: 50px 0;
+            font-size: 2em;
+        }
+        button {
+            background-color: #ddd;
+            border: 0;
+            padding: 8px 16px;
+        }
+        .main {
+            display: grid;
+            place-items: center;
+            padding-top: 100px;
+        }
+        .message {
+            border: 2px solid #ccc;
+            border-left: 5px solid blue;
+            padding: 20px;
+            background-color: white;
+        }
+        .message-danger {
+            border-left-color: red;
+        }
+        .message-warning {
+            border-left-color: orange;
+        }
+        .message-success {
+            border-left-color: green;
+        }
+        .message.is-closable {
+            padding-right: 50px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 130px 130px 130px;
+            column-gap: 10px;
+            row-gap: 50px;
+        }
+        .close {
+            display: inline-block;
+            position: absolute;
+            right: 8px;
+            padding: 0 8px;
+            cursor: pointer;
+        }
+    </style> 
+</head>
+<body>
+    <div id="app"></div>
+    <script src="https://unpkg.com/webx1@1.0.8/dist/webx1.umd.js"></script>
+    <script src="scripts/webx1-notify-plugin.umd.js"></script>
+    <script>
+        webx1({
+            appName: 'Notify Plugin Demo',
+            routes: {
+                '/': {
+                    view: () => {
+                        return `<div class="main">  
+                            <p class="options">
+                                Notify <input id="notifyCheck" type="radio" name="notificationType" checked value="notify" />
+                                Flash <input type="radio" name="notificationType" value="flash" />
+                            </p>                          
+                            <input id="message" value="Say Something Here!" />                            
+                            <div class="grid">
+                                <button id="top_left" data-theme="success">Top Left</button>
+                                <button id="top_center" data-theme="danger">Top Center</button>
+                                <button id="top_right" data-theme="warning">Top Right</button>
+                                <button id="bottom_left" data-theme="success">Bottom Left</button>
+                                <button id="bottom_center" data-closable>Bottom Center</button>
+                                <button id="bottom_right">Bottom Right</button>
+                            </div>
+                        </div>`
+                    },
+                    init: (state, { setState, $ }, el) => {
+                        let $input = el.querySelector('#message');
+                        let $check = el.querySelector('#notifyCheck');
+
+                        [].slice.call(el.querySelectorAll('button')).forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                let id = e.target.id.replace('_', ' ');
+                                let theme = e.target.dataset['theme'];
+                                let cls = 'message';
+                                if (theme) {
+                                    cls = `message message-${theme}`
+                                }
+                                if ($check.checked) {
+                                    $.notify($input.value, id, 4000, `${cls} is-closable`);
+                                } else {
+                                    $.flash($input.value, id, 4000, cls);
+                                }
+                            })
+                        })
+                    },
+                    name: 'home',
+                    meta: { title: 'Home' }
+                }
+            }
+        }).then(app => {
+            app.use(webx1NotifyPlugin);
+            app.mount(document.getElementById('app'))
+                .then(app => {
+                    window.app = app;
+                    window[app.global].flash('Click a button!', 'bottom center', 3000, 'message', 10, 10);
+                });
+        })
+    </script>
+</body>
+</html>
